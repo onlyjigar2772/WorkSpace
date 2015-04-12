@@ -5,6 +5,7 @@
 # $Id: latest-build
 #
 
+
 use strict;
 use warnings;
 use DBI;
@@ -81,13 +82,13 @@ if ( !defined($repo) ) {
      # check for successor
      if ( ! check_successor(@branch_ids) ) {
        print "Found $branches_found occurences of $branch_name in database. "
-           . "Please specify the repo name.\n";
+           . "Please specify the repo name. Ex: repo branch\n";
        display_duplicates(@branch_ids);
        exit 1;
      }
    } elsif ( $branches_found > 2 ) {
      print "Found $branches_found occurences of $branch_name in database. "
-         . "Please specify the repo name.\n";
+         . "Please specify the repo name. Ex: repo branch\n";
      display_duplicates(@branch_ids);
      exit 1;
    } elsif ( $branches_found == 0 ) {
@@ -102,7 +103,7 @@ if ( !defined($repo) ) {
      exit 1;
    } elsif ( scalar @branch_ids > 1 ) {
      print "More than one occurence of $branch_name branch in $repo repo found. "
-          . "Please specify the repo name.\n";
+          . "Please specify the repo name.(eg. repo_name branch_name)\n";
      display_duplicates(@branch_ids);
      exit 1;
    }
@@ -251,7 +252,9 @@ sub get_branch_id_by_branch_name {
   my $branch_ids = ();
   my @data = ();
   my $sql = qq {
-    SELECT branch_id FROM vcs.branch WHERE branch_name = ?
+    SELECT branch_id FROM vcs.branch
+    WHERE branch_name = ?
+    AND branch_status = 'active'
   };
   my $sth = $dbh->prepare($sql);
   $sth->execute($branch_name);
@@ -394,25 +397,25 @@ sub get_displayDT {
 # --------------------- print_result_detail
 sub print_result_detail {
   my $headingLen = length("Branching Point") + 1;
-  printf("\n%-${headingLen}s: %s", "Repo", $repo_name);
-  printf("\n\n%-${headingLen}s: %s", "Branch", $branch_name);
-  printf("\n\n%-${headingLen}s: %s", "Product", $result->{product});
-  printf("\n\n%-${headingLen}s: %s", "Latest Build",
+  printf("\n%-${headingLen}s:: %s", "Repo", $repo_name);
+  printf("\n\n%-${headingLen}s:: %s", "Branch", $branch_name);
+  printf("\n\n%-${headingLen}s:: %s", "Product", $result->{product});
+  printf("\n\n%-${headingLen}s:: %s", "Latest Build",
                                    $result->{release});
   my $utcTime = $result->{build_time};
   if ($alltimes) {
     my ($dt_iso, $dt_unix, $dt_rfc, $dt_epoch) =
                                     get_display_alltimes($utcTime);
-    printf("\n%-${headingLen}s ", "Build Time");
-    printf("\n%-${headingLen}s: %s", " - ISO 8601", $dt_iso);
-    printf("\n%-${headingLen}s: %s", " - Unix date", $dt_unix);
-    printf("\n%-${headingLen}s: %s", " - RFC 2822", $dt_rfc);
-    printf("\n%-${headingLen}s: %s", " - Epoch", $dt_epoch);
+    printf("\n%-${headingLen}s:: ", "Build Time");
+    printf("\n%-${headingLen}s:: %s", " - ISO 8601", $dt_iso);
+    printf("\n%-${headingLen}s:: %s", " - Unix date", $dt_unix);
+    printf("\n%-${headingLen}s:: %s", " - RFC 2822", $dt_rfc);
+    printf("\n%-${headingLen}s:: %s", " - Epoch", $dt_epoch);
   } else {
     my $displayDT = get_displayDT($utcTime);
-    printf("\n\n%-${headingLen}s: %s", "Build Time", $displayDT);
+    printf("\n\n%-${headingLen}s:: %s", "Build Time", $displayDT);
   }
-  printf("\n\n%-${headingLen}s: %s", "Build Status", $result->{build_outcome});
+  printf("\n\n%-${headingLen}s:: %s", "Build Status", $result->{build_outcome});
   # if ($result->{repo_vcs} eq 'git') {
   #  if (defined $result->{sha}) {
   #   printf("\n%-${headingLen}s: %s", "SHA", $result->{sha});
@@ -421,42 +424,44 @@ sub print_result_detail {
   # }
   # }
   #print "\n";
-  my @bid = get_branch_id_by_branch_name($branch_name);
+  my @bid = get_branch_id_by_branch_and_repo($branch_name,$repo_name);
   my @branch_parent = uniq get_parent_id($branch_name);
   my @created_ts = get_created_ts ($bid[0]);
   my @branch_type = get_branch_type($bid[0]);
   #print "\nBranch Type  : $branch_type[0]";
-  printf("\n\n%-${headingLen}s: %s", "Branch Type", $branch_type[0]);
+  printf("\n\n%-${headingLen}s:: %s", "Branch Type", $branch_type[0]);
   my @branch_status = get_branch_status($bid[0]);
-  #print "\n\nBranch Status: $branch_status[0]\n";
-  printf("\n\n%-${headingLen}s: %s", "Branch Status", $branch_status[0]);
+  #print "\n\nBranch Status:: $branch_status[0]\n";
+  printf("\n\n%-${headingLen}s:: %s", "Branch Status", $branch_status[0]);
   if ( scalar @branch_parent == 0 || $branch_parent[0] == $bid[0]){
-    printf("\n\n%-${headingLen}s: %s", "Branching Point", "No Parent");
-    printf("\n\n%-${headingLen}s: %s", "Parent Branch", "No Parent");
+    printf("\n\n%-${headingLen}s:: %s", "Branching Point", "No Parent");
+    printf("\n\n%-${headingLen}s:: %s", "Parent Branch", "No Parent");
   }
   else {
     #print "\n Parent ID : @branch_parent --- Branch ID : @bid \n";
     my @bdrelease = uniq get_bdrelease_by_time($created_ts[0], @branch_parent);
     if ( scalar @bdrelease < 2) {
-      printf("\n\n%-${headingLen}s: %s", "Branching Point", "NA");
+      printf("\n\n%-${headingLen}s:: %s", "Branching Point", "NA");
       my @pname = get_branch_name_by_branch_id ($branch_parent[0]);
-      printf("\n\n%-${headingLen}s: %s, Pulled from Version %s at %s", "Parent Branch", $pname[0], "NA", $created_ts[0]);
+      printf("\n\n%-${headingLen}s:: %s, Pulled from Version %s at %s", "Parent Branch", $pname[0], "NA", $created_ts[0]);
     }
     else {
     #print "\n @bdrelease --- $branch_parent[0] --- $created_ts[0] \n";
     #print "\nBranching Point: $bdrelease[0]";
-    printf("\n\n%-${headingLen}s: %s", "Branching Point", $bdrelease[0]);
+    printf("\n\n%-${headingLen}s:: %s", "Branching Point", $bdrelease[0]);
     my @pname = get_branch_name_by_branch_id ($bdrelease[1]);
     #print "\n\nParent Branch: $pname[0], Pulled from Version $bdrelease[0] at $created_ts[0]";
-    printf("\n\n%-${headingLen}s: %s, Pulled from Version %s at %s", "Parent Branch", $pname[0], $bdrelease[0], $created_ts[0]);
+    printf("\n\n%-${headingLen}s:: %s, Pulled from Version %s at %s", "Parent Branch", $pname[0], $bdrelease[0], $created_ts[0]);
     }
   }
-my $locked_status = `branch-locked $branch_name`;
+#my $locked_status = `branch-locked $branch_name`;
 #print "\n\nLocked status: $locked_status ";
-printf("\n\n%-${headingLen}s: %s", "Locked status", $locked_status);
+my @locked_status = get_branch_lock_status($bid[0]);
+my $displayDT = get_displayDT($locked_status[3]);
+printf("\n\n%-${headingLen}s:: %s, by %s - %s, on %s", "Locked status",$locked_status[0],$locked_status[1],$locked_status[2],$displayDT);
 my $shortlist_status = get_shortlist_status();
 #print "\nShortlisted: " . get_shortlist_status();
-printf("\n%-${headingLen}s: %s", "Shortlisted", $shortlist_status);
+printf("\n\n%-${headingLen}s:: %s", "Shortlisted", $shortlist_status);
 my @cids = uniq get_child_branches_by_id(@bid);
 my @child_name = ();
 if (scalar @cids !=0) {
@@ -465,20 +470,26 @@ if (scalar @cids !=0) {
   }
   @child_name = uniq @child_name;
   #print "\n\nChild branches: @child_name";
-  printf("\n%-${headingLen}s: %s, @child_name", "Child branches", scalar @child_name);
+  printf("\n%-${headingLen}s:: %s", "Child branches", scalar @child_name);
+  foreach (@child_name){
+      printf("\n%-${headingLen}s:: %s","",$_ );
+  }
 }
 else {
   #print "\n\nChild branches: ...";
-  printf("\n%-${headingLen}s: %s", "Child branches", "No Child");
+  printf("\n%-${headingLen}s:: %s", "Child branches", "No Child");
 }
-my @sha_id = uniq get_sha_id_by_branch_id(@bid);
+my @sha_id = uniq get_sha_and_ev_id_by_branch_id(@bid);
 if ( scalar @sha_id == 0 ) {
-  printf("\n\n%-${headingLen}s: %s", "SHA of last few commits", "No SHA");
+  printf("\n\n%-${headingLen}s:: %s", "SHA of last few commits", "No SHA");
 }
 else {
-  printf("\n\n%-${headingLen}s: @sha_id", "SHA of last few commits");
+  printf("\n\n%-${headingLen}s::", "SHA of last few commits");
+  foreach (@sha_id){
+     printf("\n%-${headingLen}s:: %s", "", $_);
+  }
 }
-print "\n\nSync/Merge information: ..\n\n";
+print "\n\nSync/Merge information:: <a href=\"http://confluence.sj.us.am.ericsson.se/pages/viewpage.action?pageId=78217369\">Click Here</a>\n\n";
 } # print_result_detail
 
 # --------------------- print_result_timestamp
@@ -624,9 +635,15 @@ sub get_branch_status{
 #----------------------getShortlistStatus
 
 sub get_shortlist_status{
-  my @repo = split('\.',$repo_name);
-  my $branch_repo = $branch_name . "-" . $repo[0] ;
-  my $output  = `shortlist show $branch_repo`;
+   my $branch_repo;
+  if ($repo_name eq "cvsroot"){
+      $branch_repo = "se" . "-" . $branch_name;
+  }
+  else {
+      my @repo = split('\.',$repo_name);
+      $branch_repo = $branch_name . "-" . $repo[0] ;
+  }
+  my $output  = `/tools/swdev/bin/shortlist show $branch_repo`;
   my @output_list = split('\n',$output);
   my $output_len = @output_list;
   if ( $output_len == 1 ){
@@ -682,4 +699,72 @@ sub get_sha_id_by_branch_id {
   return @sha_ids;
 }
 
+#------------------------getLockStatus
 
+sub get_branch_lock_status{
+    # my $branch_name = shift;
+  my $branch_id = shift;
+  my @lock_info = ();
+  my @data = ();
+  my $sql = qq {
+    SELECT op AS status, signum, display_name AS name, changed_ts
+    FROM vcs.branch_lock b LEFT JOIN org.resource r
+    ON ( b.changed_by = r.resource_id), vcs.lock_op l
+    WHERE b.status = l.lock_op_id
+    AND branch_id = ?
+  };
+  my $sth = $dbh->prepare($sql);
+  $sth->execute($branch_id);
+  while ( @data = $sth->fetchrow_array() ) {
+    #print "\n @data \n";
+    push (@lock_info, @data);
+  }
+  #print "\n @lock_info \n" ;
+  return @lock_info;
+}
+
+#--------------------getSHAid_and_EVid
+
+sub get_sha_and_ev_id_by_branch_id {
+  my @ids = @_;
+  my @sha_ids = ();
+  my @data = ();
+  my @data2 = ();
+  foreach my $id (@ids){
+  my $sql = qq {
+    SELECT sha,build_id
+    FROM public.build
+    WHERE branch_id = ?
+    AND "sha" is NOT null
+    LIMIT 5
+  };
+  my $sth = $dbh->prepare($sql);
+  $sth->execute($id);
+  while ( @data = $sth->fetchrow_array() ) {
+    #print "\n\nData: @data \n";
+    my $sql2 = qq {
+       SELECT bug_id
+       FROM   public.build_commit_view
+       WHERE build_id = $data[1]
+   };
+  my $sth2 = $dbh->prepare($sql2);
+  $sth2->execute();
+  my $str = $data[0] ;
+  my $i = 1;
+  while (@data2 = $sth2->fetchrow_array() ) {
+      #print "\n\nData2: @data2 \n";
+      if ($i == 1){
+          $str = $str ." - ". $data2[0];
+          $i = 0;
+      }
+      else{
+          $str = $str .", ". $data2[0];
+      }
+  }
+    #print "\n Conso - $str \n";
+    push (@sha_ids, $str);
+  }
+  }
+  #print @sha_ids;
+  return @sha_ids;
+}

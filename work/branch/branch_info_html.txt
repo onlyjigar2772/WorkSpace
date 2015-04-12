@@ -1,0 +1,165 @@
+#!/usr/bin/python
+import commands
+from  collections import OrderedDict
+import cgi
+import sys
+import os
+key_value =OrderedDict()
+print('Content-type: text/html\r\n\r')
+print "<html lang=''>"
+print "<head>"
+print "<style>"
+print "#header {"
+#print "background-color:#5B6475;"
+print "background-color:#ffffff;"
+print "color:#002561;"
+print "text-align:center;"
+print "padding:5px;"
+print "}"
+print "#text3 {"
+print "background: #002555;"
+print "color: #ffffff;"
+print "width: 250px;"
+print "padding: 6px 15px 6px 35px;"
+print "border-radius: 20px;"
+print "box-shadow: 0 1px 0 #ccc inset;"
+print "transition: 500ms all ease;"
+print "outline: 0;"
+print "}"
+print "#text3:hover {"
+print "width: 300px;"
+print "}"
+print """#dtable {
+                font-family: calibri;
+                background: rgba(255,255,255,10);
+                border-collapse: collapse;
+                border:1px solid #1e0707;
+            }
+
+            #dtable td, #dtable th, #dtable thead {
+                font-size: 12px;
+                border: 1px solid #98bf21;
+                padding: 3px 7px 2px 7px;
+            }
+
+            #dtable th {
+                font-size: 15px;
+                text-align: left;
+                padding-top: 5px;
+                padding-bottom: 4px;
+                background-color:#F0F8FF;
+                color:#000000;
+                box-shadow: 10px 10px 5px #888888;
+            }
+             #dtable td {
+                font-size: 15px;
+                text-align: left;
+                padding-top: 5px;
+                padding-bottom: 4px;
+                background-color:#F0F8FF;
+                color:#000000;
+                box-shadow: 10px 10px 5px #888888;
+            }
+
+            #dtable tr.alt td {
+                color: #000000;
+
+            }
+            .focusclr{
+                background-color: #F7F6CB;
+                border-color: #ff0000;
+            }
+
+            #screenFiller {
+                position: absolute;
+                top: 0; right: 0; bottom: 0; left: 0;
+            }
+
+            .black_overlay{
+                display: none;
+                position: absolute;
+                top: 0%;
+                left: 0%;
+                width: 100%;
+                height: 100%;
+                background-color: black;
+                z-index:1001;
+                -moz-opacity: 0.8;
+                opacity:.80;
+                filter: alpha(opacity=80);
+            }
+
+            .white_content {
+                display: none;
+                position: absolute;
+                top: 10%;
+                left: 10%;
+                width: 70%;
+                height: 70%;
+                padding: 16px;
+                border: 16px solid #009999;
+                background-color: white;
+                color: red;
+                z-index:1002;
+                overflow: auto;
+            }</style>"""
+
+print "</head>"
+arguments = cgi.FieldStorage()
+data = arguments.getvalue("data")
+#data ="lsv"
+print "</head>"
+print "<body style="'"margin: 0px; padding: 0px; font-family: Trebuchet MS,verdana;"'" >"
+print "<div id="'header'">"
+print "<img align="'"left"'" src="'"http://defectmetrics.sj.us.am.ericsson.se/images/elogo.png"'">"
+print "<h1>BRANCH INFORMATION</h1>"
+print "</div>"
+print "<hr>"
+print "</body>"
+if data == None:
+        print "<body style='margin: 0px; padding: 0px; font-family: Trebuchet MS,verdana;' >"
+        print "<h5 style="'"color:red"'">Disclaimer: This page is under development. For feedback and suggestions please mail us @ <a href="'"mailto:IP.SWOperations@ericsson.com"'">IP Operations</a> </h5>"
+        print "<br>"
+        print "<br>"
+        print "<table>"
+        print "    <form>"
+        print "    <h4 style="'"color:#002561;float: left; margin-left: 20px;"'">Enter branch Name : <input type="'"text"'" name="'"data"'" id ="'"text3"'" placeholder="'"Ex. lsv or ipos lsv (case-sensitive)"'"/>"
+        print "    <input type="'"submit"'" name="'"submit"'" value="'"search"'" onclick=hideshow(); />"
+        print "    </form>"
+        print "</table>"
+        print "</body>"
+        print "</html>"
+else:
+        #call your script function which would return an list of values.
+        #iterate over the list in for loop and populate the below variable values.
+        var = commands.getoutput("./branch_info.pl %s"%data)
+        li = []
+        lst= []
+        li = var.split("\n\n")
+        for l in li:
+            lst.append(l.split("::"))
+        for item in lst :
+            key_value[item[0]] = item[1:]
+        print "</head>"
+        print "<body style="'margin: 0px; padding: 0px; font-family: Trebuchet MS,verdana;'">"
+        print "<h5 style="'"color:red"'">Disclaimer: This page is under development. For feedback and suggestions please mail us @ <a href="'"mailto:IP.SWOperations@ericsson.com"'">IP Operations</a> </h5>"
+        print "<br>"
+        print "<br>"
+        print "<table>"
+        print "    <form>"
+        print "    <h4 style="'"color:#002561;float: left; margin-left: 20px;"'">Enter branch Name : <input type="'"text"'" name="'"data"'" id ="'"text3"'" placeholder="'"Ex. lsv or ipos lsv (case-sensitive)"'"/>"
+        print "    <input type="'"submit"'" name="'"submit"'" value="'"search"'"/> </h4>"
+        print "    </form>"
+        print "</table>"
+        print "<table style="'width:80%'" border="'2'" id ="'dtable'">"
+        for key in key_value.keys():
+             print "<tr>"
+             var = len(key_value[key])
+             print "<tr><th colspan ="'6'" rowspan =%s>%s</th>"%(var,key.strip())
+             for value in key_value[key]:
+                 print "<td colspan ="'6'">%s </tr>"%value.strip()
+             print "</tr>"
+        #print "</tr>"
+        print "</table>"
+        print "</body>"
+        print "</html>"
