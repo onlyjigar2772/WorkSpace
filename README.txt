@@ -14,3 +14,9 @@ Regarding ^M and \r is found at the end of each line
 -----------------------------------------------------
 1) To view the ^M or \r use the cmd: head myScript.sh | cat -vet
 2) To remove the problem, sed -i 's/\r$//' myScript.sh
+
+-----------------------------------------------------
+Making a script a util cmd
+-----------------------------------------------------
+1) Copy the file to anyone of the $PATH directory
+2) Create a symbolic link so that you can name the cmd
