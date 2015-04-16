@@ -18,7 +18,14 @@ Regarding ^M and \r is found at the end of each line
 ------------------------------------------------------
 Regarding creating util commands in workspace
 ------------------------------------------------------
+1) First copy the util file to $PATH directory.{Any}
+2) Goto the path and create a symbolic link
+ln -s {/path/to/file-name} {link-name}
 
 -----------------------------------------------------------
 Regarding fixing \r issues that is getting appened to files
 -----------------------------------------------------------
+1) Github suggests that you should only use \n as new line char.
+2) Looks like you have to set config git config --global core.autocrlf true
+3) Also use, git rm --cached -r .
+4) Test this and if valid remove clean.sh script from env
