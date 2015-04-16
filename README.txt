@@ -15,3 +15,10 @@ Regarding ^M and \r is found at the end of each line
 1) To view the ^M or \r use the cmd: head myScript.sh | cat -vet
 2) To remove the problem, sed -i 's/\r$//' myScript.sh
 
+------------------------------------------------------
+Regarding creating util commands in workspace
+------------------------------------------------------
+
+-----------------------------------------------------------
+Regarding fixing \r issues that is getting appened to files
+-----------------------------------------------------------
