@@ -17,7 +17,7 @@ for file in os.listdir('.'):
     pyCountFile = 0
     FH = open(file, 'r')
     for line in FH:
-        if (line.startswith('#') or line =='\n'):
+        if (line.startswith('#') or line =='\n' or line =='^M$'):
            continue 
         pyCountFile += 1
     print "The LoC for %s is %d"%(file, pyCountFile)
