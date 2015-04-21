@@ -1,5 +1,6 @@
 #!/usr/bin/bash
-
+#Author - Jigar
+#About - 
 #To equate numbers use -eq, -ne, -gt, -ge, -lt, -le, !expr
 
 a=4

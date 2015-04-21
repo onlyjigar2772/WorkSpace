@@ -1,6 +1,6 @@
 #!/usr/bin/sh
-
-
+#Author - Jigar
+#About - To validate string we use == operator.
 valid_PASSWORD="secret"
 echo "Please enter the password: "
 read PASSWORD

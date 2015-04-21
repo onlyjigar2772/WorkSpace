@@ -1,4 +1,8 @@
 #!/usr/bin/bash
+#Author - Jigar
+#About - This script is used to check if the number of input args is not 0.
+#It then creates a new file using touch command and gives the file exe per
+#Also should how we can iterate through all input line arg
 
 #Usage
 

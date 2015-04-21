@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+#Author - Jigar
+#About - The script should if..then..fi, if..then..else..fi and if..then..elif..then..else..fi
 
 #To equate numbers use -eq, -ne, -gt, -ge, -lt, -le, !expr
 
