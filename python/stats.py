@@ -21,4 +21,4 @@ for file in os.listdir('.'):
            continue 
         pyCountFile += 1
     print "The LoC for %s is %d"%(file, pyCountFile)
-#pyCount +=pyCountFile
+#print "Total Lines of code is", (pyCount +=pyCountFile)

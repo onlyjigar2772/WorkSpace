@@ -21,7 +21,7 @@ def send_thank_you_mail():
     to_email = 'jigar.shah\@wipro.com'
     email = 'jigar.shah\@wipro.com'
     from_email = GMAIL_EMAIL
-    subj = "Hello"
+    subj = "This is a test mail"
     header = "To:%s\nFrom:%s\nSubject:%s \n" % (to_email,
             from_email, subj)
     # Hard-coded templates are not best practice.

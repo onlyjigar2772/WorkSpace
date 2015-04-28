@@ -1,4 +1,6 @@
 #!/usr/bin/python
+#Author - Jigar
+#About - The script is used to show number of arguments and the arguments
 
 import sys
 

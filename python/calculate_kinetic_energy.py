@@ -1,5 +1,6 @@
 #!/usr/bin/python
-
+#Author - Jigar
+#About -
 #Calculate kinetic Energy
 
 print("This program calculates the kinetic energy of a moving object.")
