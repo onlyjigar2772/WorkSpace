@@ -29,3 +29,11 @@ Regarding fixing \r issues that is getting appened to files
 2) Looks like you have to set config git config --global core.autocrlf true
 3) Also use, git rm --cached -r .
 4) Test this and if valid remove clean.sh script from env
+
+
+-----------------------------------------------------------
+http://stackoverflow.com/questions/692246/undo-working-copy-modifications-of-one-file-in-git
+-----------------------------------------------------------
+1) git checkout -- file
+
+
