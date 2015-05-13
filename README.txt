@@ -31,9 +31,10 @@ Regarding fixing \r issues that is getting appened to files
 4) Test this and if valid remove clean.sh script from env
 
 
+
 -----------------------------------------------------------
-http://stackoverflow.com/questions/692246/undo-working-copy-modifications-of-one-file-in-git
+11. To undo a working copy modifications of one file in git.
 -----------------------------------------------------------
 1) git checkout -- file
-
+2) Reference link: http://stackoverflow.com/questions/692246/undo-working-copy-modifications-of-one-file-in-git
 
