@@ -38,3 +38,10 @@ Regarding fixing \r issues that is getting appened to files
 1) git checkout -- file
 2) Reference link: http://stackoverflow.com/questions/692246/undo-working-copy-modifications-of-one-file-in-git
 
+
+-------------------------------------------------------------------------------
+12. How do I add a multi-line comment to Perl source code?
+--------------------------------------------------------------------------------
+
+1) simply do =head ##your code to comment =cut
+2) Reference Link: http://stackoverflow.com/questions/3828205/how-do-i-enter-a-multi-line-comment-in-perl
