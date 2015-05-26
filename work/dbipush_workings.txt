@@ -1,0 +1,116 @@
+How to access dashbaord db 'dbipush'
+====================================
+
+--------------------------------------
+This section is regarding credentials:
+--------------------------------------
+Read only access:
+mysql -u dblord_read -p -P 3314 -h dbhotel-mysql 
+Password: read_all 
+
+Write access (please use it cautiously):
+mysql -u dblord_adm -p -P 3314 -h dbhotel-mysql 
+Password: lordofDB  
+
+--------------------------------------
+DB operations:
+--------------------------------------
+
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| dbipush            |
+| dblord             |
++--------------------+
+3 rows in set (0.01 sec)
+
+mysql> use dbipush;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+mysql> show tables;
++-------------------------+
+| Tables_in_dbipush       |
++-------------------------+
+| DASHBOARD_AUTHCHECK     |
+| DASHBOARD_AUTHPUSH      |
+| DASHBOARD_BUILD_ALL     |
+| DASHBOARD_CHANGESET     |
+| DASHBOARD_CODEREVIEW    |
+| DASHBOARD_COVERITY      |
+| DASHBOARD_PATCHSET      |
+| DASHBOARD_PREFLIGHT     |
+| DASHBOARD_SMOKETEST     |
+| DASHBOARD_SMOKETEST_ISM |
+| DASHBOARD_USER          |
+| DASHBOARD_USER_DETAILS  |
+| DASHBOARD_UTF_BUILD     |
++-------------------------+
+13 rows in set (0.00 sec)
+
+mysql> DESC DASHBOARD_AUTHCHECK;
++-------------------+--------------+------+-----+---------+-------+
+| Field             | Type         | Null | Key | Default | Extra |
++-------------------+--------------+------+-----+---------+-------+
+| commit_id         | varchar(50)  | NO   | PRI |         |       |
+| jenkins_url       | varchar(244) | YES  |     | NULL    |       |
+| jenkins_build_num | int(10)      | YES  |     | NULL    |       |
+| status            | varchar(10)  | YES  |     | NULL    |       |
+| log_location      | varchar(244) | YES  |     | NULL    |       |
+| start_time        | datetime     | YES  |     | NULL    |       |
+| end_time          | datetime     | YES  |     | NULL    |       |
+| duration          | time         | YES  |     | NULL    |       |
++-------------------+--------------+------+-----+---------+-------+
+8 rows in set (0.01 sec)
+
+Similarly you can describe and know about all the other tables.
+
+mysql> SELECT * FROM DASHBOARD_AUTHCHECK;
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| commit_id                                | jenkins_url                                                                      | jenkins_build_num | status | log_location                                                                    | start_time          | end_time            | duration |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| f39619a8397545c89dc8d99703e2c6445ea59a93 | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386//console |              2386 | +1     | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386/console | 2015-05-14 03:34:54 | 2015-05-14 03:35:33 | 01:03:00 |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+1 row in set (0.00 sec)
+
+Status after performing the insert operation:
+
+mysql> SELECT * FROM DASHBOARD_AUTHCHECK;
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| commit_id                                | jenkins_url                                                                      | jenkins_build_num | status | log_location                                                                    | start_time          | end_time            | duration |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| 6fe4c541a07a51e4a082073c0619a200572e09a4 | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2384/console  |              2384 | NULL   | NULL                                                                            | 2015-05-14 07:06:12 | NULL                | NULL     |
+| f39619a8397545c89dc8d99703e2c6445ea59a93 | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386//console |              2386 | +1     | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386/console | 2015-05-14 03:34:54 | 2015-05-14 03:35:33 | 01:03:00 |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+2 rows in set (0.04 sec)
+
+Status after performing the update operation:
+mysql> SELECT * FROM DASHBOARD_AUTHCHECK;
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| commit_id                                | jenkins_url                                                                      | jenkins_build_num | status | log_location                                                                    | start_time          | end_time            | duration |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| 6fe4c541a07a51e4a082073c0619a200572e09a4 | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2384/console  |              2384 | +1     | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2384/console | 2015-05-14 07:06:12 | 2015-05-14 07:06:21 | 00:00:09 |
+| f39619a8397545c89dc8d99703e2c6445ea59a93 | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386//console |              2386 | +1     | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386/console | 2015-05-14 03:34:54 | 2015-05-14 03:35:33 | 01:03:00 |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+2 rows in set (0.00 sec)
+
+If you want to delete the entry you just made:
+mysql> delete from DASHBOARD_AUTHCHECK where commit_id='6fe4c541a07a51e4a082073c0619a200572e09a4';
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT * FROM DASHBOARD_AUTHCHECK;
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| commit_id                                | jenkins_url                                                                      | jenkins_build_num | status | log_location                                                                    | start_time          | end_time            | duration |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+| f39619a8397545c89dc8d99703e2c6445ea59a93 | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386//console |              2386 | +1     | https://eis-jenkins-ip-os.sj.us.am.ericsson.se/job/ipush-authcheck/2386/console | 2015-05-14 03:34:54 | 2015-05-14 03:35:33 | 01:03:00 |
++------------------------------------------+----------------------------------------------------------------------------------+-------------------+--------+---------------------------------------------------------------------------------+---------------------+---------------------+----------+
+1 row in set (0.00 sec)
+
+
+
+

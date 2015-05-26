@@ -1,7 +1,8 @@
 #!/usr/bin/python
-#Author - Jigar
-#About -
-#Calculate kinetic Energy
+# __author__ = 'Jigar'
+
+
+# Calculate kinetic Energy
 
 print("This program calculates the kinetic energy of a moving object.")
 m_string = input("Enter the object's mass in kilograms: ")
