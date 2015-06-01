@@ -1,0 +1,31 @@
+1) Make the below changes in the config file:
+
+# Database info
+database:
+    # dbipush MySQL database server details
+    mysql:
+        host: 147.117.56.16
+        user: dblord_adm
+        passwd: lordofDB
+        db: dbipush
+        port: 3314
+
+    # dbipush tables
+    label_table:
+        changeset: DASHBOARD_CHANGESET
+        patchset: DASHBOARD_PATCHSET
+        authcheck: DASHBOARD_AUTHCHECK
+        authpush: DASHBOARD_AUTHPUSH
+        coverity: DASHBOARD_COVERITY
+        smoketest: DASHBOARD_SMOKETEST
+        smoketest_ism: DASHBOARD_SMOKETEST_ISM
+        build_utf: DASHBOARD_UTF_BUILD
+        build_pcref: DASHBOARD_BUILD_PCREF
+        build_ssr: DASHBOARD_BUILD_SSR
+        build_chassis: DASHBOARD_BUILD_CHASSIS
+
+2) git commit msg.
+
+Adding dbipush.py enable to enable access dbipush.
+Implementing logger module. Added print function. Used load_config
+re-structured the code to replicate ipush coding standard.
