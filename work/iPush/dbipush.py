@@ -12,6 +12,10 @@ import sys
 import MySQLdb
 import logging
 import getopt
+import json
+import pexpect
+import datetime
+import time
 
 from ipush.api import load_config
 from ipush.utils import glib
@@ -64,8 +68,8 @@ def insert_into_table(db, table_name, table_fields, table_values):
 
     # Prepare SQL query to INSERT a record into the database.
     table_fields_str = ','.join(table_fields)
-    table_values = tuple(table_values)
-    sql_query = "insert into %s (%s) values %s" %(table_name, \
+    table_values = ','.join('"' + item + '"' for item in table_values)
+    sql_query = "insert into %s (%s) values (%s)" %(table_name, \
                                                 table_fields_str, table_values)
     #print('The qury', sql_query)
     try:
@@ -154,6 +158,48 @@ def dbipush(label, operation, field_value):
         #print('ERROR: You can perform either insert or update operations only.')
         LOGGER.error("You can perform either insert or update operations only.")
 
+def format_time(time_diff):
+    '''
+    This function is used to convert the time diffrence in specific format.
+    '''
+
+    seconds = time_diff % 60
+    temp = int (time_diff / 60)
+    minutes = temp % 60
+    hours = int (temp / 60)
+    time_taken_str = str(hours) + ":" + str(minutes) + ":" + str(seconds)
+    return time_taken_str
+
+
+def get_code_review_data(gerrit_id):
+    '''
+    This function is used to get the latest Code-Review data from gerrit.
+    '''
+
+    cmd = "ssh -p 29418 gerrit.ericsson.se gerrit query --format=JSON --current-patch-set %s" %gerrit_id
+    data = pexpect.run(cmd)
+    data = data.split('\r\n')[0]
+    data = json.loads(data)
+    commit_id, reviewed_by, status, duration = None, None, None, None
+    reviewed_on = 0
+    field_value = {}
+    commit_id = data['currentPatchSet']['revision']
+    created_on = data['currentPatchSet']['createdOn']
+    for item in  data['currentPatchSet']['approvals']:
+        if item["type"].strip() == "Code-Review" and reviewed_on < int(item["grantedOn"]):
+            status = item["value"]
+            reviewed_on = int(item["grantedOn"])
+            reviewed_by = item["by"]["username"]
+            duration = reviewed_on - created_on
+    field_value['commit_id'] = commit_id
+    field_value['reviewed_by'] = reviewed_by
+    field_value['reviewed_on'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(reviewed_on))
+    field_value['duration'] = format_time(duration)
+    field_value['status'] = status
+
+    #print(field_value)
+    return field_value
+
 
 def run(argv):
     """Process options from command line and send to retrigger."""
@@ -167,11 +213,11 @@ def parse_argv(argv=None):
         argv = []
     try:
         opts, _ = getopt.getopt(argv, 'hiu', ['help', 'insert', 'update', 'label=', \
-                     'gerrit-url=', 'gerrit-id=', 'project=', 'branch=', 'owner' \
+                     'gerrit-url=', 'gerrit-id=', 'project=', 'branch=', 'owner=', \
                      'reviewer=', 'ev=', 'created-on=', 'last-updated=', 'number=', 'change-id=', \
                      'parent-id=', 'commit-id=', 'commit-message=', 'jenkins-url=', 'build-num=', \
                      'start-time=', 'status=', 'log-location=', 'artifactory-image=', 'nfs-image=', \
-                     'end-time=', 'test-bed=', 'jenkins-url=', 'pass-per'])
+                     'end-time=', 'test-bed=', 'jenkins-url=', 'pass-per='])
     except getopt.GetoptError as err:
         #print('ERROR: invalid argument', err)
         LOGGER.error(err)
@@ -222,13 +268,13 @@ def parse_argv(argv=None):
             elif opt == '--number':
                 field_value['number'] = arg
             elif opt == '--change-id':
-                field_value['change-id'] = arg
+                field_value['change_id'] = arg
             elif opt == '--parent-id':
                 field_value['parent_id'] = arg
             elif opt == '--commit-id':
                 field_value['commit_id'] = arg
             elif opt == '--commit-message':
-                field_value['commit_message'] = arg
+                field_value['commit_msg'] = arg
             elif opt == '--jenkins-url':
                 field_value['jenkins_url'] = arg
             elif opt == '--build-num':
@@ -261,11 +307,13 @@ def parse_argv(argv=None):
         cmd_help()
         sys.exit()
 
+    if label == 'code-review':
+        field_value = get_code_review_data(field_value['gerrit_id'])
     #print(label, operation, field_value)
     return label, operation, field_value
 
 '''
 if __name__ == '__main__':
-    #logging.basicConfig(level='INFO', format="%(levelname)s: %(message)s")
+    logging.basicConfig(level='INFO', format="%(levelname)s: %(message)s")
     run(sys.argv[1:])
 '''

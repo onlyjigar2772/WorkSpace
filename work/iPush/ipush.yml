@@ -1,0 +1,446 @@
+#
+# Define the parameters for module as how you refer to in your module
+#
+#
+# Pre-check before Push
+#
+pre_push_check:
+    validation_list:
+      - commit_message
+      - scratch-config
+      - euid-access
+      - clean_workspace
+      - one_commit
+      - gerrit_connection
+      - authcheck
+
+#
+# Web configuration for published build logs
+#
+webserver:
+    default:
+        webroot: '/home/iposretest/public_html/buildlog'
+        weburl: 'https://homeweb.sj.us.am.ericsson.se/~iposretest/buildlog'
+    mo:
+        webroot: '/proj/selnhub_webdocs/Hosted/webhotel01/sites/covprivbuild-ip.mo.sw.ericsson.se/public/builds/iposretest'
+        weburl: 'http://covprivbuild-ip.mo.sw.ericsson.se/builds/iposretest'
+
+email:
+    # configure notify_users to ARTS test for email results
+    notify_users: 'PDLPOSCIEN@pdl.internal.ericsson.com'
+
+#
+# ARTS Test Configuration
+#
+plugin:
+    SmokeTest:
+        gerrit_label: "Smoketest"
+        script_name: '/project/arts/trees/current_tree_iposarts/sqa/ARTS/bin/ipos/iposrun'
+        script_param_format: '-image {image} -artex_options "-mailto {mailto} -auto_initb_rerun 2" -owner {owner} -template IPOS_pf05 -vcd iposci_vcd_1'
+        # notify_users: 'eanknem ekimpri esmakan esonkee ehanske eshpaul ejiawen'
+        mo:
+            script_name: '$ARTS/infra/bin/ipos/iposrun'
+            script_param_format: '-image {image} -artex_options "-mailto {mailto} -auto_initb_rerun 2" -owner {owner} -template IPOS_pf05 -vcd iposci_vcd_1'
+    ISMTest:
+        gerrit_label: "Smoketest-ISM"
+        # use wrapper script for ISM test to allocate test bed before ISM test.
+        script_name: '/home/iposarts/ipush/scripts/smoke_wrapper/smoke_test_script/ism_test_wrapper.sh'
+        script_param_format: '-image {image} -mailto {mailto} -auto_initb_rerun 2 -drop_testbed'
+        script_timeout: 10800
+        # notify_users: 'eanknem ekimpri esmakan esonkee ehanske eshpaul ejiawen'
+        mo:
+            script_name: '$ARTS/infra/bin/ipos/iposrun'
+            script_param_format: '-image {image} -artex_options "-mailto {mailto} -auto_initb_rerun 2 -drop_testbed" -owner {owner} -tb_num 4 -template IPOS_ref_1d01 -vcd iposci_vcd_1 -suite /lab/arts-cvs/cvs-got/iposarts/trees/sqa.production/ARTS/infra/suites/ISM_REG.suite'
+    UTFTest:
+        # support type: UNITTEST, ARTSTEST or any default
+        #
+        script_name: '/home/iposarts/ipush/scripts/smoke_wrapper/smoke_test_script/utf_test_wrapper.sh'
+        script_param_format: '--image {image} --module_list {module_list}'
+        gerrit_label: "UTF-Test"
+    # IFACE-FABL:
+    #    # UTF ARTS Module, this module should be also defined in utf_mdoule.yaml file.
+    #    # Called by UTFTest Plugin, as part of result of UTFTest
+    #    #
+    #    script_name: '/home/iposarts/ipush/scripts/smoke_wrapper/smoke_test_script/utf_test_wrapper.sh'
+    #    script_param_format: '-image {image} -mailto {mailto} -type arts'
+    #
+    # OtherUTF-ARTS-Test:
+    #    script_name: '...'
+    #    script_param_format: '-image {image} -mailto {mailto} -type arts'
+    #
+    SmartTest:
+        suite_names: "ISM_REG IPOSREFPIZZA-ipos-LSV-preflight"
+        platform: "IPOSREF-PIZZA"
+        # changed based test suite.
+        suite_names_optional: ""
+        gerrit_label: "Smoketest"
+
+arts_parse_rule:
+    # parse first error to match the first error.
+    # format: ['pattern', 'short message', 'action']
+    - ['ERROR --- Cannot start exec_cli', 'VMWare environment is not stable', 'AUTO_RETRY']
+    - ['ERROR --- STC::Error_Handle:Script errors reached maximum limit', 'STC error', '']
+    - ['EXIT: Fail: gen_tb', 'Failed to generate testbed', 'AUTO_RETRY']
+    - ['ADMIN_IP not found. Aborted!!!', 'Failed to login to testbed from admin console', '']
+    - ['ERROR --- Net::NTP timed out geting NTP packet', 'NTP server timeout', '']
+
+ipos_launcher:
+    script_path: '/tools/sqa/ipos/iposLauncher'
+    # the email address should be separated by commas
+    submit_job_param: ' -launchSuite -suiteName {suite_name} -imageName {image} -user {user} -platform {platform} -mailto {mailto}'
+
+# Projects Define
+#
+project:
+  "RnD_Ops/ipush":
+    product: "ipush"
+    build_cmd: "source configure && make"
+    relative_build_path: ""
+    yoda_repo_name: 'ipush'
+    targets:
+      -
+        target: "ipush"
+        image: "obj/ipush"
+  "pduip-os/ipos":
+    product: "ipos"
+    build_cmd: "umask 0002; emq ipos-all"
+    build_pizza_cmd: "umask 0002; emq ref-pizza"
+    relative_build_path: "pkt"
+    relative_logs_path: "ipush_logs"
+    relative_paths_to_validate_access:
+      - 'images'
+      - 'pkt'
+    branch:
+      # branch to be supported in workflow
+      # allow the branch match REL_IPOS.*
+      - 'lsv'
+      #- 're:REL_IPOS_*'
+    yoda_repo_name: 'pduip'
+    targets:
+      -
+        target: "pkg-pc-linux-ref-release"
+        image: "images/pkg-pc-linux-ref-release.tar.gz"
+        action: "SmokeTest"
+        process_blocks:
+        -
+          name: "SmokeTest"
+          requires:
+            - "build_target:ref_pizza"
+        -
+          name: "ISMTest"
+          requires:
+            - "build_target:ref_pizza"
+        #action: "Smoke"
+        #process_blocks:
+        #  -
+        #   name: "CreateTestbed"
+        #   on_failure: "DestroyTestbed"
+        #   on_success: "Smoke"
+        #  -
+        #   name: "Smoke"
+        #   requires:
+        #     - "CreateTestbed"
+        #     - "build_target:ref_pizza"
+        #   on_success: "DestroyTestbed"
+        #   on_failure: "DestroyTestbed"
+        #  -
+        #    name: "DestroyTestbed"
+      -
+        target: "pkg-linux-x86-32-linux-asg-ase-release"
+        image: "images/pkg-linux-x86-32-linux-asg-ase-release.tar.gz"
+      -
+        target: "pkg-linux-x86-32-linux-xc-release"
+        image: "images/pkg-linux-x86-32-linux-xc-release.tar.gz"
+      -
+        target: "pkg-pc-linux-xc-release"
+        image: "images/pkg-pc-linux-xc-release.tar.gz"
+      -
+        target: "pkg-pc-linux-asg-ase-release"
+        image: "images/pkg-pc-linux-asg-ase-release.tar.gz"
+      -
+        target: "SSR-lc-ppadiags"
+        image: "images/SSR-lc-ppadiags.tar.gz"
+      -
+        target: "SSR-alswtdiags"
+        image: "images/SSR-alswtdiags.tar.gz"
+      -
+        target: "pkg-generic-powerpc-linux-asg-lc-ppa-release"
+        image: "images/pkg-generic-powerpc-linux-asg-lc-ppa-release.tar.gz"
+      -
+        target: "SSR-lc2diags"
+        image: "images/SSR-lc2diags.tar.gz"
+      -
+        target: "SSR-lc6500mc-epp2diags"
+        image: "images/SSR-lc6500mc-epp2diags.tar.gz"
+      -
+        target: "pkg-generic-powerpc-linux-asg-alswt-release"
+        image: "images/pkg-generic-powerpc-linux-asg-alswt-release.tar.gz"
+      -
+        target: "SSR-lc3041-np4diags"
+        image: "images/SSR-lc3041-np4diags.tar.gz"
+      -
+        target: "pkg-SSR-lc3041-np4diags"
+        image: "images/pkg-SSR-lc3041-np4diags.tar.gz"
+      -
+        target: "pkg-generic-powerpc-linux-asg-lc2-release"
+        image: "images/pkg-generic-powerpc-linux-asg-lc2-release.tar.gz"
+      -
+        target: "pkg-generic-powerpc-linux-asg-lc3041-np4-release"
+        image: "images/pkg-generic-powerpc-linux-asg-lc3041-np4-release.tar.gz"
+      -
+        target: "pkg-generic-powerpc-linux-asg-lc6500mc-epp2-release"
+        image: "images/pkg-generic-powerpc-linux-asg-lc6500mc-epp2-release.tar.gz"
+      -
+        target: "security"
+        image: "images/security.tar.gz"
+      -
+        target: "SSR-sscdiags"
+        image: "images/SSR-sscdiags.tar.gz"
+      -
+        target: "pkg-pc-linux-asg-ssc-release"
+        image: "images/pkg-pc-linux-asg-ssc-release.tar.gz"
+      -
+        target: "SSR-lcdiags"
+        image: "images/SSR-lcdiags.tar.gz"
+      -
+        target: "pkg-generic-powerpc-linux-asg-lc-release"
+        image: "images/pkg-generic-powerpc-linux-asg-lc-release.tar.gz"
+      -
+        target: "SSR-diags"
+        image: "images/SSR-diags.tar.gz"
+      -
+        target: "pkg-SSR"
+        image: "images/pkg-SSR.tar.gz"
+      -
+        target: "pkg-vipp-vfrwd"
+        image: "images/pkg-vipp-vfrwd.tar.gz"
+      -
+        target: "pkg-vipp-vlc"
+        image: "images/pkg-vipp-vlc.tar.gz"
+      -
+        target: "pkg-vipp-vssc"
+        image: "images/pkg-vipp-vssc.tar.gz"
+      -
+        target: "utf-xc-linux-x86-64"
+        image: "images/utf-xc-linux-x86-64.tar.gz"
+      -
+        target: "pkg-vipp-vrp"
+        image: "images/pkg-vipp-vrp.tar.gz"
+      -
+        target: "ASE-tmp"
+        image: "images/ASE-tmp.tar.gz"
+      -
+        target: "pkg-SSR-sdk"
+        image: "images/pkg-SSR-sdk.tar.gz"
+      -
+        target: "pkg-pc-linux-ipos-ref-lc-release"
+        image: "images/pkg-pc-linux-ipos-ref-lc-release.tar.gz"
+      -
+        target: "pkg-pc-linux-ipos-ref-rp-release"
+        image: "images/pkg-pc-linux-ipos-ref-rp-release.tar.gz"
+#
+# Account used for Gerrit Code Review
+# Not applied yet.
+#
+gerrit:
+    server : gerrit.ericsson.se
+    username : iposretest
+    password : TEMPLATE_PASSWORD
+
+#
+# VCloud Paramaters for SJ Hub as default
+#
+vcloud:
+    # default configuration for SJ site
+    default:
+        proxy:
+            'https' : 'https://proxy-blue.sj.us.am.ericsson.se:3128'
+        api_url : 'https://10.126.192.102/api/'
+        org : "iposci"
+        orgvdc : "vc03-pvdc1-IPOSCI"
+        template : "IPOS_pf05_CI"
+        catalog : "Preflight_2"
+        username : "ipos_arts"
+        password : '{AES}zjDoKqad9DK5IE7KbI/zBPJgWSyo9yCzxBa1IoM+GFBaqe8f68YfJLy7Fy2sH1i1'
+        vm_username : "root"
+        vm_password : "ww"
+    # VCloud Paramaters for GOT Hub
+    mo_not_ready:
+        proxy:
+            'https' : 'https://proxy-blue.sj.us.am.ericsson.se:3128'
+        api_url : 'https://selnipnvcloud.seln.ete.ericsson.se/api/'
+        org : "iposci"
+        orgvdc : 'res-IPOSCI'
+        template : 'IPOS_pf05'
+        catalog : 'Preflight_Catalog'
+        username : "ipos_arts"
+        password : '{AES}zjDoKqad9DK5IE7KbI/zBPJgWSyo9yCzxBa1IoM+GFBaqe8f68YfJLy7Fy2sH1i1'
+        vm_user : "root"
+        vm_password : "ww"
+
+#
+# ARTS Paramaters
+#
+arts:
+    default:
+        # value of server strategy: RANDOM, SEQUENCE, SYS_LOAD
+        server_strategy: 'SYS_LOAD'
+        # lxapp-4 ~ lxapp-8, lxapp-3, lxapp-2, lxapp-1
+        server: '147.117.58.163 147.117.58.161 147.117.58.162 147.117.58.163 147.117.58.164 155.53.154.223 147.117.58.241'
+        username: 'iposarts'
+        prompt: ' >|lxapp-[0-9]|eussjlx[0-9]{4}'
+        password: '{AES}DQXnSxeSbUO5RMvp7vVvU4Jol4b8ObJAQADcxW4oHOP/5tfHfgRlyr8qztn52ACO'
+        directory: '/project/testengineers/ipush'
+        log_url: 'http://arts.redback.com/cgi-bin/logViewer.cgi'
+    # configuration for GOT hub
+    mo:
+        server_strategy: 'SYS_LOAD'
+        # ARTS server for all developers: selnipnarts07.seln.ete.ericsson.se selnipnarts08.seln.ete.ericsson.se
+        # ARTS server for DE workflow ipush: selnipnarts09.seln.ete.ericsson.se selnipnarts10.seln.ete.ericsson.se
+        server: '10.94.110.64 10.94.110.65'
+        username: 'iposarts'
+        prompt: '> '
+        password: '{AES}siGLjHgX1SsDUyR/5CDbT50Gp81eYk7RVhiFawxdMl/sabXxbdPQJkKKVeXKcjBN'
+        directory: '/lab/pduip_build-images/private/ipush'
+
+#
+# Coverity Scan Path
+#
+coverity:
+    scan_path :
+      - "pkt/sw/se/xc/bsd/routing"
+      - "pkt/sw/se/xc/bsd/system"
+      - "comp/etid"
+      - "comp/eti_util"
+      - "comp/sds"
+      - "pkt/sw/fabl/layer3/mpls"
+      - "pkt/sw/fabl/layer3/fib"
+
+logging:
+    log_level : INFO
+    log_conf_file : logging.conf
+
+#
+# Error Message and Mapping
+#
+# To be defined in future
+#
+messaging:
+    msg:
+      - id: "E0120"
+        text: authcheck failed due to shortlist.
+        hint: please wait for branch unlocked.
+      - id: "E0121"
+        text: authcheck validation is not passed due to permission, while you can continue to ipush.
+        hint: please check the error message.
+      - id: "E0122"
+        text: branch %(branch) is not supported in project %(project).
+        hint: if you run ipush on topic branch, please use git ipush -b branch_name.
+      - id: "E0110"
+        text: workspace is not clean
+        hint: please run git status and clean workspace before ipush
+
+#
+# Authpush
+#
+authpush:
+    cc_list:
+      - krishan.sharma@ericsson.com
+      - euler.jiang@ericsson.com
+      - kenneth.hansen@ericsson.com
+      - ankita.nema@ericsson.com
+      - kim.pribble@ericsson.com
+    # code review labels that need +1 to be authpushed
+    blocking_labels:
+      - AuthCheck
+      - Build
+      - Build-UTF
+
+#
+# Preflight repo
+#
+preflight:
+    lsv:
+        clone_path: '/home/iposretest/preflight-repo/ipos-preflight'
+    REL_IPOS_15_2:
+        clone_path: '/home/iposretest/preflight-repo/REL_15_2-preflight'
+    REL_IPOS_15_1:
+        clone_path: '/home/iposretest/preflight-repo/REL_15_1-preflight'
+    REL_IPOS_14_2:
+        clone_path: '/home/iposretest/preflight-repo/REL_IPOS_14_2-preflight'
+
+#
+# Yoda
+#
+yoda:
+    cmd_format: '/tools/swdev/bin/yoda query {attribute} -r {repo} -j {files_string}'
+    cmd_branch_format: '/tools/swdev/bin/yoda query {attribute} -r {repo} -b {branch} -j {files_string}'
+    repo:
+        "ipush":
+          project: "RnD_Ops/ipush"
+          branches:
+            - master
+          gerrit_code_review_group: 'RnD_Ops/ipush/developers'
+        "pduip":
+          project: "pduip-os/ipos"
+          branches:
+            - lsv
+            # - REL_IPOS_15_2
+            # - REL_IPOS_15_1
+            # - REL_IPOS_14_2
+          gerrit_code_review_group: 'pduip-os/ipos/developers'
+    update_sleep_secs: 15
+    should_email_on_reviewer_error: True
+    notify_emails: 'PDLPOSCIEN@pdl.internal.ericsson.com'
+    bad_email_template: 'config/yoda_no_gerrit_account.template'
+    missing_email_template: 'config/yoda_wrong_gerrit_access.template'
+    email_subject_format: 'Failed to add {reviewer_name} as reviewer for {project} code_review'
+
+#
+# Special user list
+#
+users:
+    functional_users:
+      - iposbuild
+      - sysbuild
+      - jnkadm
+      - iposretest
+      - selnsync
+    ipush_functional_users:
+      - iposretest
+      - selnsync
+    ipush_developers:
+      - esmakan
+      - ejiawen
+      - ehanske
+      - eanknem
+      - ekimpri
+
+# Misc Tool Paths
+ldap_path: '/tools/swdev/bin/ldap-e'
+
+
+# Database info
+database:
+    # dbipush MySQL database server details
+    mysql:
+        host: 147.117.56.16
+        user: dblord_adm
+        passwd: lordofDB
+        db: dbipush
+        port: 3314
+
+    # dbipush tables
+    label_table:
+        changeset: DASHBOARD_CHANGESET
+        patchset: DASHBOARD_PATCHSET
+        authcheck: DASHBOARD_AUTHCHECK
+        authpush: DASHBOARD_AUTHPUSH
+        coverity: DASHBOARD_COVERITY
+        smoketest: DASHBOARD_SMOKETEST
+        smoketest_ism: DASHBOARD_SMOKETEST_ISM
+        build_utf: DASHBOARD_UTF_BUILD
+        build_pcref: DASHBOARD_BUILD_PCREF
+        build_ssr: DASHBOARD_BUILD_SSR
+        build_chassis: DASHBOARD_BUILD_CHASSIS
+        code-review: DASHBOARD_CODEREVIEW

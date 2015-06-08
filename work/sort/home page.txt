@@ -1,0 +1,25 @@
+---------------------------------------------------------------------------------------------}
+Ericsson || Home	|| Search	|| commits 	|| Statistics	|| Feedback	||
+Logo     ||
+---------------------------------------------------------------------------------------------}
+---------------------------------------------------------------------------------------------}
+Space padding
+---------------------------------------------------------------------------------------------}
+---------------------------------}{----------------------------------------------------------}
+Dashboard Login					 | 1. Login to see the your present actitvity using ipush
+								 | 2. Use search option to find the latest details about 
+Login							 |	  a gerrit_id. 
+								 | 2.1 Also find using users signum his latest 5 commits
+								 | 3. Navigate to commits section to find the latest commits
+Password						 |    See the progress of all the commits as they happen at 
+								 |    the CLI.
+								 | 3.1 You can intervene, you can retrigger any phase of ipush
+Login button					 |   on failure
+---------------------------------} 3.2 Switch fluently between timeline view and flowchart view 
+---------------------------------} 4 Let us get down to analytics. Be it at user level
+Space padding					 |    or organization level. 
+---------------------------------} 5 Find various charts to help you analyse
+---------------------------------}
+Important Links.				 |
+Confluence information			 |
+---------------------------------}{----------------------------------------------------------}
