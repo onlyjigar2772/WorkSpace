@@ -15,10 +15,10 @@ def home(request):
         
         #form.save()
         instance = form.save(commit=False)
-        full_name = form.cleaned_data.get("full_name")
-        if not full_name:
-            full_name = "New Jigar"
-        instance.full_name = full_name 
+        signum = form.cleaned_data.get("signum")
+        if not signum:
+            signum = "New Jigar"
+        instance.signum = signum 
 #       if not instance.full_name:
 #            instance.full_name = "Jigar"
 #        instance.save()
