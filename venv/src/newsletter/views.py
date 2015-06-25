@@ -4,7 +4,7 @@ from .forms import ContactForm, SignUpForm
 # Create your views here.
 
 def home(request):
-    title = "Hello"
+    title = "Welcome"
     form = SignUpForm(request.POST or None)
     context = {
         "title": title,
@@ -26,7 +26,7 @@ def home(request):
             "title": "Welcome"
         }
 
-    return render(request, "base.html", context)
+    return render(request, "home.html", context)
 	
 def contact(request):
     form = ContactForm(request.POST or None)
