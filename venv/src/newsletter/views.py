@@ -23,7 +23,7 @@ def home(request):
 #            instance.full_name = "Jigar"
 #        instance.save()
         context = {
-            "title": "Welcome"
+            "title": "Thank you"
         }
 
     return render(request, "home.html", context)
