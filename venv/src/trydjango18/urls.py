@@ -21,7 +21,11 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', 'newsletter.views.home', name='home'),
-    url(r'^contact/$', 'newsletter.views.contact', name='contact'),
+    url(r'^feedback/$', 'newsletter.views.feedback', name='feedback'),
+	url(r'^about/$', 'trydjango18.views.about', name='about'),
+	url(r'^commits/$', 'trydjango18.views.commits', name='commits'),
+	url(r'^statistics/$', 'trydjango18.views.statistics', name='statistics'),
+	url(r'^search/$', 'trydjango18.views.search', name='search'),
 ]
 
 if settings.DEBUG:

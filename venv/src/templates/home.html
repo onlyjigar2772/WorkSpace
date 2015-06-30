@@ -1,24 +1,51 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% block head_title %}Welcome | {% endblock %}
+<style>
+{% block style %}
+
+{% endblock %}
+</style>
+
 {% block jumbotron %}
-<!-- Main component for a primary marketing message or call to action -->
+
 <div class="jumbotron">
-	<h2>iPush dashboard pilot implementation</h2>
-	<p>This example for basic homepage view.</p>
-	<p>
-	  <a class="btn btn-lg btn-primary" href="../../components/#navbar" role="button">View navbar docs &raquo;</a>
-	</p>
+		
+	<div class="row">
+	<div class="col-sm-6">
+		<h1>What iPush does? </h1>
+		<p style="color: CornflowerBlue">Performs environment check of DE's workspace,
+		Generates a code review in Gerrit,
+		Executes pre-authpush checks on Jenkins, 
+		Performs Authcheck,
+		Performs Builds : ipos-all & UTF,
+		Runs Smoketest, ISM Regression Test, UTF test
+		coverity scan, DDL-Check</p>
+		</div>
+		<div class='col-sm-6' style="background-color:black;height:370px;">
+		</div>
+	</div>
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="row">
-  <div class="col-md-3">
-	<h1>{{ title }}</h1>
+<div class='col-xs-3'>
+<p class='lead'>Commits in progress: 12</p>
+</div>
+<div class='col-xs-3'>
+<p class='lead'; style="color: red">Commits failed / abandoned: 200</p>
+</div>
+<div class='col-xs-3'>
+<p class='lead'; style="color: green">Commits merged: 1234</p>
+</div>
+
+
+  <div class="col-xs-3 pull-right">
+	<p class='lead'>{{ title }}<p>
 	<form method='POST' action=''> {% csrf_token %}
 	{{ form|crispy }}
-	<input class='btn btn-primary'type='submit' value='Login' />
+	<input class='btn btn-primary'type='submit' value='Join Us' />
 	</form>
    </div>
 </div>

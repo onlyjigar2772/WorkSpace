@@ -11,16 +11,21 @@
     <link rel="icon" href="">
     <title>{% block head_title %} {% endblock %}iPush Dashboard</title>
     {% include 'head_css.html' %}
+	<style>
+		{% block style %}{% endblock %}
+	</style>
 	</head>
   <body>
 
   {% include 'navbar.html' %}
-    <div class="container-fluid">
-	{% block jumbotron %}
-	{% endblock %}
+    <div class="container">
+
+		{% block jumbotron %}
+
+		{% endblock %}
 	
-    {% block content %}
-	{% endblock %}
+		{% block content %}
+		{% endblock %}
     </div> <!-- /container -->
 	{% include 'javascripts.html' %}
   </body>
