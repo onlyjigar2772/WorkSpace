@@ -1,0 +1,3 @@
+https://stackoverflow.com/questions/23788436/unlinking-a-locally-cloned-repository-from-its-github-origin
+git remote rm origin
+rm .git/FETCH_HEAD
